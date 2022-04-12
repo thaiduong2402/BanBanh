@@ -1,6 +1,6 @@
 const { json } = require('body-parser')
 const paypal = require('paypal-rest-sdk');
-
+const Order = require('../models/Order');
 paypal.configure({
     'mode': 'sandbox', //sandbox or live
     'client_id': 'AeWJHCS9-QyHSk5R_Inbsn_C4rzQ3pmHMOfUxthzi-kZVvBnSzmtPu9DI3RJRNO6mJaaz4yefkpjzhOq',
@@ -72,7 +72,7 @@ class BuyController{
    success(req,res){
     const payerId = req.query.PayerID;
     const paymentId = req.query.paymentId;
-
+    console.log("req: "+req.body.items)
     const execute_payment_json = {
         "payer_id": payerId,
         "transactions": [{
@@ -89,16 +89,25 @@ class BuyController{
             console.log(error.response);
             throw error;
         } else {
-            console.log(JSON.stringify(payment));
-            const order = new Order({
-
-                ma: items.ma,
-                ten: items.ten,
-                userName: { type: String, index: true},
-                soLuong: { type: Number, default: 0 },
-                tongGia :{ type: Number, default: 0 },
+            const info = payment;
+            const ten = info.transactions[0].description;
+            const email = info.payer.payer_info.email;
+            const user = info.payer.payer_info.last_name;
+            const tong = info.transactions[0].amount.total;
             
-              });
+            const now = new Date();
+            console.log("now: "+now)
+            const order = new Order({
+                ten:ten,
+                userName: user,
+                email:email,
+                tongGia : tong*23000,
+                date: now
+            
+                
+            }); 
+            order.save();
+
             res.send('Success (Mua hàng thành công)</br> <a href="http://localhost:3001/">quay ve trang chu </a>')
         }
     });

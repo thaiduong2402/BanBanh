@@ -22,5 +22,6 @@ router.post('/additem' , upload,AdminController.checkLogin, AdminController.addI
 router.post('/getAll' , AdminController.checkLogin,AdminController.getAll)
 router.post('/deleteitem' , AdminController.deleteItem)
 router.post('/edititem' , AdminController.editItem)
+router.post('/donhang' , AdminController.checkLogin,AdminController.donHang)
 router.post('/addtuyendung' ,AdminController.checkLogin, AdminController.addTuyenDung)
 module.exports = router;

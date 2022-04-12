@@ -4,7 +4,7 @@ const Banh = require('../models/Banh')
 const TuyenDung = require('../models/TuyenDung')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
+const Order = require('../models/Order');
 require('dotenv/config')
 
 
@@ -41,13 +41,16 @@ class AdminController{
       }
    }
 
-   checkAdmin=(req,res,next) => {
+   async checkAdmin(req,res,next){
 
       try {
-         var token = req.body.token
+         var token = req.body.token       
          var username = jwt.verify(token, 'thaiduong')
-
-            if(username.role === 2){
+         const nameAdmin = username.username
+         const user = await Account.findOne({ username: nameAdmin})
+         
+         console.log(user)
+            if(user.role > 1){
                next()
             }else{
                res.status(400).json('loi khong phai admin')
@@ -186,11 +189,19 @@ class AdminController{
       async postRegister(req, res) {
          const us = req.body.username;
          const pw = req.body.password;
-
          const salt = await bcrypt.genSalt();
          const password = await bcrypt.hash(pw,salt)
          
+         const ktUS = await Account.findOne({ username: us})
 
+         if(ktUS)
+         {
+            res.status(400).json({ message:"tai khoan da ton tai"})
+         }
+
+         else{
+            
+         
          const account = await new Account({
             username: us,
             password: password,
@@ -200,8 +211,8 @@ class AdminController{
         });
         account.save();
 
-        res.status(200).send("dang ky thanh cong")
-
+        res.status(200).json({ message:"dang ky thanh cong"})
+      }
       }
 
       async addTuyenDung(req,res){
@@ -219,6 +230,11 @@ class AdminController{
         res.status(200).json('thanh cong')
         
         
+      }
+
+      async donHang(req, res) {
+         const order = await Order.find();
+         res.json(order)
       }
 
         
